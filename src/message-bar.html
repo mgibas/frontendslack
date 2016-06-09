@@ -1,0 +1,48 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<dom-module id="message-bar">
+  <template>
+    <style include="iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+        background: #FFF;
+      }
+      paper-input {
+        padding-left: 1rem;
+      }
+      paper-icon-button {
+        margin-top: 15px;
+      }
+      
+    </style>
+    <div class="layout horizontal">
+      <paper-input class="flex" value="{{message}}" label="Message..."></paper-input>
+      <paper-icon-button icon="send" on-tap="_send"></paper-icon-button>
+    </div>
+  </template>
+
+  <script>
+    (() => {
+      'use strict';
+      class MessageBar {
+        get is() {
+          return 'message-bar'
+        }
+        get properties() {
+          return {
+          };
+        }
+        _send() {
+          this.fire('message-sent',{message:this.message});
+          this.message = null;
+        }
+      }
+      Polymer(MessageBar);
+    })();
+  </script>
+
+</dom-module>

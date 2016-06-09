@@ -1,0 +1,111 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="message-bar.html">
+<link rel="import" href="message-template.html">
+
+
+<dom-module id="channel-element">
+
+  <template>
+    <style include="iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+      }
+      
+      message-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width:100%;
+      }
+      
+      .message-container {
+        height: calc(80%);
+        overflow-y: scroll;
+      }
+    </style>
+    <app-route route="{{route}}" pattern="/:id" data="{{routeData}}"></app-route>
+    <firebase-document
+      app-name="frontendslack"
+      path="/channels/{{routeData.id}}"
+      data="{{channelData}}">
+    </firebase-document>
+    <firebase-document
+      id="fbNewMessage"
+      app-name="frontendslack"
+      data="{{newMessage}}">
+    </firebase-document>
+    
+    <firebase-query
+        id="query"
+        app-name="frontendslack"
+        data="{{messages}}">
+    </firebase-query>
+    
+    <div class="messageContainer">
+      <iron-list class$="flex" id="messageList" items="{{messages}}" as="message" scroll-target="document">
+         <template>
+          <message-template
+            message="{{message}}"
+            author="{{username}}">
+          </message-template>
+        </template>
+      </iron-list>
+    </div>
+      
+    <message-bar on-message-sent="_sendMessage"></message-bar>
+  </template>
+
+  <script>
+    (() => {
+      'use strict';
+      class ChannelElement {
+        get is() {
+          return 'channel-element'
+        }
+        get properties() {
+          return {
+            route: {
+              type: Object
+            },
+            username: {
+              type: String,
+              value: () => `anonymous-${Math.floor(Math.random() * 1000000000)}`
+            }
+          };
+        }
+
+        get observers() {
+          return [
+            '_routeDataChanged(routeData)',
+            '_messagesChanged(messages.splices)'
+          ];
+        }
+
+        _sendMessage(e, data) {
+          this.newMessage = {
+            author: this.username,
+            text: data.message
+          }
+          this.$.fbNewMessage.save(`/channels/${this.routeData.id}/messages`)
+          this.$.fbNewMessage.reset();
+        }
+        
+        _routeDataChanged(data) {
+          if (!data.id) return;
+          this.$.query.path = `/channels/${data.id}/messages`
+        }
+        
+        _messagesChanged(newMessages, p){
+          console.log(this.messages.length-1);
+          this.$.messageList.scrollToIndex(this.messages.length-1);
+        }
+      }
+      Polymer(ChannelElement);
+    })();
+  </script>
+
+</dom-module>

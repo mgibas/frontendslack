@@ -1,0 +1,93 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-shared-styles.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/paper-fab-transitions/paper-fab-morph.html">
+
+
+<dom-module id="channel-list">
+
+  <template>
+
+    <style>
+      :host {
+        display: block;
+        padding: 10px;
+      }
+      
+      paper-fab {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+      }
+      
+      paper-dialog {
+        min-width: 400px;
+      }
+      
+    </style>
+    
+    <firebase-query
+        id="query"
+        app-name="frontendslack"
+        path="channels"
+        data="{{channels}}">
+    </firebase-query>
+    
+    <firebase-document id="fb" app-name="frontendslack" data="{{channel}}">
+    </firebase-document>
+ 
+    <paper-listbox>
+      <template is="dom-repeat" items="{{channels}}">
+        <a href="/channel/[[item.$key]]">
+          <paper-item data-key="{{item.$key}}">{{item.name}}</paper-item>
+        </a>
+      </template>
+    </paper-listbox> 
+    
+    <paper-fab-morph id="addButton" is-overlay-content class="top-left">
+      <paper-fab icon="add" class="dropdown-trigger"></paper-fab>
+      <paper-dialog class="dropdown-content">
+        <paper-input label="channel name" value="{{channel.name}}"></paper-input>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Close</paper-button>
+          <paper-button on-tap="saveChannel" >Save</paper-button>
+        </div>
+      </paper-dialog>
+    </paper-fab-morph>
+
+  </template>
+
+  <script>
+    (() => {
+      class ChannelList {
+        get is() { return 'channel-list'; }
+        
+        get properties() {
+          return {
+            channel: Object
+          };
+        }
+        
+        saveChannel() {
+          this.$.fb.save('/channels');
+          this.channel.name = '';
+          this.$.addButton.close();
+        }
+      }
+     
+      Polymer(ChannelList);
+    })();
+
+  </script>
+
+</dom-module>
