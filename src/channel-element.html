@@ -2,14 +2,16 @@
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="message-bar.html">
 <link rel="import" href="message-template.html">
 
 <dom-module id="channel-element">
-
   <template>
-    <style  include="iron-flex iron-flex-alignment iron-flex-factors iron-positioning">
+    <style  include="custom-styles iron-flex iron-flex-alignment iron-flex-factors iron-positioning">
       :host {
         display: block;
       }
@@ -19,21 +21,33 @@
         color: #fff;
       }
       
-      section {
-        height: 100%;
+      paper-material{
+        background-color:#FFF;
+        padding: 1rem 1rem;
+        text-align: center;
       }
       
       paper-listbox {
         margin-bottom: 80px;
       }
       
-      message-bar{
+      message-bar {
         position:fixed;
         bottom:0;
         right:0;
         width:100%;
       }
-
+      
+      @media(min-width: 640px) {
+        message-bar {
+          left: var(--app-drawer-width, 256px);
+          width: calc(100% - var(--app-drawer-width, 256px));
+        }
+      }
+              
+      message-template[current-user-message] {
+        background-color: var(--accent-color);
+      }
     </style>
     
     <firebase-document
@@ -47,25 +61,21 @@
         path="channelPath"
         app-name="frontendslack"
         data="{{channel}}"></firebase-document>
-           
-    <app-header reveals>
-        <app-toolbar>
-            <paper-icon-button icon="arrow-back" on-tap="_close"></paper-icon-button>
-            <div title>
-              [[channel.name]]
-            </div>
-        </app-toolbar>
-    </app-header>
-    
+   
     <section class="layout vertical">
-      <paper-listbox class="flex" id="messageList" >
-         <template is="dom-repeat" items="{{getMessages(channel.messages)}}" as="message">
-          <message-template
-            message="{{message}}"
-            current-username="{{username}}">
-          </message-template>
-        </template>
-      </paper-listbox>
+      <template is="dom-if" if="[[noMessages(channel.messages)]]">
+        <paper-material>There are no messages</paper-material>
+      </template>
+<!--       <template is="dom-if" if="[[!noMessages(channel.messages)]]"> -->
+        <paper-listbox id="messageList" class="flex">
+           <template is="dom-repeat" items="{{getMessages(channel.messages)}}" as="message">
+            <message-template
+              message="{{message}}"
+              current-username="{{username}}">
+            </message-template>
+          </template>
+        </paper-listbox>
+<!--       </template> -->
       <message-bar on-message-sent="_sendMessage"></message-bar> 
     </section>
   </template>
@@ -103,12 +113,21 @@
             text: data.message,
             date: new Date().toISOString(),
           }
-          this.$.fbNewMessage.save(`/channels/${this.selectedChannel}/messages`)
-          this.$.fbNewMessage.reset();
+          this.$.fbNewMessage
+            .save(`/channels/${this.selectedChannel}/messages`)
+              .then(() => {
+                this.$.fbNewMessage.reset();
+                var lastMessage = this.$.messageList.items[this.$.messageList.items.length-1];
+                lastMessage.scrollIntoView(true);
+              });
         }
         
         _keyChanged(key) {
           this.$.fbChannel.path = `/channels/${this.selectedChannel}`;
+        }
+        
+        noMessages(channelMessages) {
+          return !channelMessages || !Object.keys(channelMessages).length;
         }
         
         getMessages(channelMessages) {
