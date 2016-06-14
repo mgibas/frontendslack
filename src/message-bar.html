@@ -1,16 +1,21 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 
 <dom-module id="message-bar">
   <template>
-    <style include="iron-flex iron-flex-alignment">
+    <style include="iron-flex iron-flex-alignment iron-flex-factors iron-positioning">
       :host {
         display: block;
-        background: #FFF;
+
       }
+      
       paper-input {
         padding-left: 1rem;
       }
@@ -18,9 +23,15 @@
         margin-top: 15px;
       }
       
+      .bar {
+        background-color: #FFF;
+        border-top: 1px solid #ccc;
+        color: #FFF
+      }
     </style>
-    <div class="layout horizontal">
-      <paper-input class="flex" value="{{message}}" label="Message..."></paper-input>
+    <iron-a11y-keys target="[[enterTarget]]" keys="enter" on-keys-pressed="_send"></iron-a11y-keys>
+    <div class="bar layout horizontal">
+      <paper-input id="text" class="flex" value="{{message}}" label="Message..."></paper-input>
       <paper-icon-button icon="send" on-tap="_send"></paper-icon-button>
     </div>
   </template>
@@ -30,14 +41,26 @@
       'use strict';
       class MessageBar {
         get is() {
-          return 'message-bar'
+          return 'message-bar';
         }
         get properties() {
           return {
+            enterTarget: {
+              type: Object,
+              value: function() {
+                return this.$.text;
+              }
+            }
           };
         }
         _send() {
-          this.fire('message-sent',{message:this.message});
+          if (!this.message.trim().length) {
+            return;
+          }
+
+          this.fire('message-sent', {
+            message: this.message
+          });
           this.message = null;
         }
       }

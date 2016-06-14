@@ -4,27 +4,29 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
+<link rel="import" href="DateBehavior.html">
+
 <dom-module id="message-template">
 
   <template>
     <style include="iron-flex iron-flex-alignment">
       :host {
         display: block;
-      }
-      message-bar{
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width:100%;
+        margin-left: 1rem;
+        margin-right: 1rem;
       }
     </style>
     
    <paper-item>
     <paper-item-body two-line>
-      <div>[[message.text]]</div>
-      <div secondary>[[message.author]]</div>
+      <div secondary class="layout horizontal fit">
+        <span class="flex">[[message.author]]</span>
+        [[toTime(message.date)]]
+      </div>
+      <div>[[message.text]]</div>      
     </paper-item-body>
   </paper-item>
+    
     
   </template>
 
@@ -32,12 +34,21 @@
     (() => {
       'use strict';
       class SingleMessageElement {
-        get is() { return 'message-template'  }
+        get is() { return 'message-template'; }
+        get behaviors() { return [DateBehavior]; }
         get properties() {
           return {
             message: Object,
-            username: String
+            currentUsername: String,
+            currentUserMessage:{
+              type: Boolean,
+              reflectToAttribute: true,
+              computed: '_computeCurrentUserMessage(message,currentUsername)'
+            }
           };
+        }
+        _computeCurrentUserMessage(message,currentUsername){
+          return message.author === currentUsername;
         }
       }
       
