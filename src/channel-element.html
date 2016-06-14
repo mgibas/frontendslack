@@ -63,19 +63,15 @@
         data="{{channel}}"></firebase-document>
    
     <section class="layout vertical">
-      <template is="dom-if" if="[[noMessages(channel.messages)]]">
-        <paper-material>There are no messages</paper-material>
-      </template>
-<!--       <template is="dom-if" if="[[!noMessages(channel.messages)]]"> -->
-        <paper-listbox id="messageList" class="flex">
-           <template is="dom-repeat" items="{{getMessages(channel.messages)}}" as="message">
-            <message-template
-              message="{{message}}"
-              current-username="{{username}}">
-            </message-template>
-          </template>
-        </paper-listbox>
-<!--       </template> -->
+      <paper-material hidden$=[[!_noMessages]]>There are no messages</paper-material>
+      <paper-listbox id="messageList" class="flex" hidden$=[[_noMessages]]>
+         <template is="dom-repeat" items="{{getMessages(channel.messages)}}" as="message">
+          <message-template
+            message="{{message}}"
+            current-username="{{username}}">
+          </message-template>
+        </template>
+      </paper-listbox>
       <message-bar on-message-sent="_sendMessage"></message-bar> 
     </section>
   </template>
@@ -93,6 +89,10 @@
             username: {
               type: String,
               value: () => `anonymous-${Math.floor(Math.random() * 1000000000)}`
+            },
+            _noMessages:{
+              type: Boolean,
+              computed: '_computeNoMessages(channel)'
             }
           };
         }
@@ -126,8 +126,8 @@
           this.$.fbChannel.path = `/channels/${this.selectedChannel}`;
         }
         
-        noMessages(channelMessages) {
-          return !channelMessages || !Object.keys(channelMessages).length;
+        _computeNoMessages(channel) {
+          return !channel || !channel.messages || Object.keys(channel.messages).length === 0;
         }
         
         getMessages(channelMessages) {
