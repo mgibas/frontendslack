@@ -22,12 +22,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="manifest" href="/manifest.json">
 
   <script>
-
     // setup Polymer options
     window.Polymer = {lazyRegister: true, dom: 'shadow'};
-
-    // load webcomponents polyfills
-    (function() {
+    window.addEventListener('load', function() {
+      // load webcomponents polyfills if needed
       if ('registerElement' in document
           && 'import' in document.createElement('link')
           && 'content' in document.createElement('template')) {
@@ -36,9 +34,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // polyfill web components
         var e = document.createElement('script');
         e.src = '/bower_components/webcomponentsjs/webcomponents-lite.min.js';
-        document.head.appendChild(e);
+        document.body.appendChild(e);
       }
-    })();
+      // load pre-caching service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js');
+      }
+    });
   </script>
   <link rel="import" href="/src/app-element.html">
 
