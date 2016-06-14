@@ -1,9 +1,10 @@
 {
-  "entrypoint": "index.html",
-  "shell": "src/my-app.html",
-  "fragments": [
-    "src/my-view1.html",
-    "src/my-view2.html",
-    "src/my-view3.html"
-  ]
+    "entrypoint": "index.html",
+    "shell": "src/app-element.html",
+    "fragments": [
+        "src/channel-element.html",
+        "src/channels-list.html",
+        "src/message-bar.html",
+        "src/message-template.html"
+    ]
 }
